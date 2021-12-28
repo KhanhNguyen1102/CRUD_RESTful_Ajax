@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+    function getAllClass(){
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/api/classes",
+            success: function (data){
+                console.log(data)
+                displayData(data);
+            }
+        })
+    }
+    function getAllStudent(){
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/api/students",
+            success:function (data){
+                console.log(data)
+                displayData(data);
+            }
+        })
+    }
+    function displayData(array){
+        let res=""
+        for (let i = 0 ; i< array.length;i++){
+            res += array[i].name +
+                "<button onclick='showEditForm("+array[i].id+")'>Edit</button>&ensp;" +
+                "<button onclick='deleteContent("+array[i].id+")'>Delete</button> <br>" ;
+        }
+        document.getElementById("display").innerHTML=res;
+    }
+    function findByName(){
+        let name = document.getElementById("key").value;
+        console.log(name)
+        $.ajax({
+            type: "GET",
+            url:"http://localhost:8080/api/students/search/" + name,
+            success : function (array){
+                console.log(array)
+                let res=""
+                for (let i = 0 ; i< array.length;i++){
+                    res += array[i].name +
+                        "<button onclick='showEditForm("+array[i].id+")'>Edit</button>&ensp;" +
+                        "<button onclick='deleteContent("+array[i].id+")'>Delete</button> <br>" ;
+                }
+                document.getElementById("display").innerHTML=res;
+            },
+            error:getAllStudent
+        })
+    }
+
+    function deleteContent(id){
+        $.ajax({
+            type: "DELETE",
+            url: "http://localhost:8080/api/students/" + id,
+            success: getAllStudent,
+            error: function (error){
+                console.log(error)
+            }
+        })
+    }
+
+    function showFormAdd(){
+        let form = '<input type="text" id="age">\n'+
+            '<input type="text" id="name">\n'+
+            ' <input type="text" id="score">\n'+
+            '<select name="" id="classRoom">';
+
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/api/classes",
+            success: function (data){
+                console.log(data)
+                for (let i = 0; i < data.length; i++) {
+                    form+= '<option value="'+data[i].id+'">'+data[i].name+'</option>'
+                }
+                form+= '</select>\n'+
+                    ' <button onclick="saveStudent()">Thêm</button>'
+                document.getElementById("display").innerHTML= form;
+            }
+        })
+    }
+
+    function saveStudent(){
+        let age = document.getElementById("age").value;
+        let name = document.getElementById("name").value;
+        let score = document.getElementById("score").value;
+        let classRoom = document.getElementById("classRoom").value;
+        let student = {
+            name :name,
+            age : age,
+            score : score,
+            classRoom :{
+                id:classRoom
+            }
+        }
+        console.log(student)
+        $.ajax({
+            headers:{
+                'Accept':'application/json',
+                'Content-Type':'application/json',
+            },
+            type: 'POST',
+            url: 'http://localhost:8080/api/students',
+            data :JSON.stringify(student),
+            success: getAllStudent,
+            error: function (error){
+                console.log(error)
+            }
+        })
+    }
+    function updateStudent(){
+        let id = document.getElementById("id").value;
+        let age = document.getElementById("age").value;
+        let name = document.getElementById("name").value;
+        let score = document.getElementById("score").value;
+        let classRoom = document.getElementById("classRoom").value;
+        let student = {
+            name :name,
+            age : age,
+            score : score,
+            classRoom :{
+                id:classRoom
+            }
+        }
+        console.log(student)
+        $.ajax({
+            headers:{
+                'Accept':'application/json',
+                'Content-Type':'application/json',
+            },
+            type: 'PUT',
+            url: 'http://localhost:8080/api/students/' + id,
+            data :JSON.stringify(student),
+            success: getAllStudent,
+            error: function (error){
+                console.log(error)
+            }
+        })
+    }
+    function showEditForm(id) {
+        $.ajax({
+            type: "GET",
+            url: "http://localhost:8080/api/students/" + id,
+            success: function (data) {
+                let form = '<input type="hidden" id="id" value="'+data.id+'">\n' +
+                    '<input type="text" id="name" value="'+data.name+'">\n' +
+                    '<input type="text" id="score" value="'+data.score+'">\n' +
+                    '<input type="text" id="age" value="'+data.age+'">\n' +
+                    '<input type="text" id="classRoom" value="'+data.classRoom.id+'">\n' +
+                    '    <button onclick="updateStudent()">edit</button>';
+                document.getElementById("display").innerHTML = form;
+            },
+            error:function (error) {
+                console.log(error)
+            }
+        })
+    }
+
+    </script>
+</head>
+<body>
+<button onclick="getAllClass()" >Hiển thị danh sách lớp</button>
+<button onclick="getAllStudent()" >Hiển thị danh sách học sinh</button>
+<button onclick="showFormAdd()">Thêm học sinh mới</button>
+<input type="text" id="key" >
+<button onclick="findByName()">Tìm kiếm</button>
+<br>
+<div id="display">
+
+</div>
+</body>
+</html>
